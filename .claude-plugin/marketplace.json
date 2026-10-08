@@ -1,0 +1,12 @@
+{
+  "name": "jg-tools",
+  "description": "Judgment-first Claude Code skills for running an agent-assisted workflow: session capture, docs hygiene, naming, PR unsticking, scheduling.",
+  "owner": { "name": "Justin Griffiths" },
+  "plugins": [
+    {
+      "name": "workflow",
+      "source": "./plugins/workflow",
+      "description": "Capture lessons, wrap sessions, dedupe files, keep docs honest, name things consistently, unstick PRs, find meeting times."
+    }
+  ]
+}

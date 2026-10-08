@@ -1,0 +1,16 @@
+# Generic leak patterns for contributions. Matching is case-sensitive.
+# 1Password secret references
+op://[^ )"'`]+
+# Notion page / database IDs
+[0-9a-f]{32}
+[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+# Supabase project refs and keys
+[a-z]{20}\.supabase\.co
+sb_(secret|publishable)_[A-Za-z0-9_-]+
+eyJ[A-Za-z0-9_-]{20,}\.
+# Common API key shapes
+(sk|pk|rk)_(live|test)_[A-Za-z0-9]{10,}
+sk-ant-[A-Za-z0-9_-]{10,}
+gh[pousr]_[A-Za-z0-9]{20,}
+# Machine-specific home paths
+/Users/[A-Za-z]+

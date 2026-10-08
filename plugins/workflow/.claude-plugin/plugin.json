@@ -1,0 +1,5 @@
+{
+  "name": "workflow",
+  "description": "Capture lessons, wrap sessions, dedupe files, keep docs honest, name things consistently, unstick PRs, find meeting times.",
+  "author": { "name": "Justin Griffiths" }
+}

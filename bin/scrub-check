@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# scrub-check — fail if any file under ROOT matches a deny pattern.
+# Filter: prints file:line:match for every hit, exit 1 on any hit, 0 when clean.
+#   bin/scrub-check <root> <deny-file> [<deny-file> ...]
+# Deny files hold one extended regex per line; '#' lines and blanks are ignored.
+# Client names are NOT kept in this repo (the list would itself leak them) —
+# pass the client deny file from your private canonical library.
+set -euo pipefail
+root="${1:?root}"; shift
+[ $# -ge 1 ] || { echo "usage: scrub-check <root> <deny-file>..." >&2; exit 2; }
+pat="$(cat "$@" | grep -vE '^\s*(#|$)' | paste -sd'|' -)"
+hits="$(grep -rnoIE "$pat" "$root" --exclude-dir=.git --exclude='deny-*.txt' --exclude=scrub-check || true)"
+[ -z "$hits" ] && exit 0
+printf '%s\n' "$hits"; exit 1
