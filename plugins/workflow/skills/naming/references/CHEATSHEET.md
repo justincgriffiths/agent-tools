@@ -90,13 +90,14 @@ install-hook <library> [--apply]                       # wires the block tier; p
 verify                                                 # the gate for the tooling itself
 ```
 
-## The three tiers
+## The four tiers
 
 | Tier | Holds it | Needs you |
 |---|---|---|
 | **Generate** | indexes, manifests, these tables | never |
 | **Block** | pre-commit, touched units only | at commit, with the fix named |
 | **Report** | weekly digest | approval only |
+| **Settle** | `glossary.yml` — one concept, one word | a ruling; nothing else can make it |
 
 **Thin spots, stated:** hooks are per-clone and untracked, so a fresh clone silently
 has no block tier — the digest reports unhooked repos, and that is the only backstop.

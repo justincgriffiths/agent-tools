@@ -187,3 +187,32 @@ every branch in that repo commits regenerated `MANIFEST.yml` and `README.md`, so
 forever. A sweep that re-resolves this each night is treating a design choice as
 weather. Name it in the digest and let the user decide (generate at merge time / in
 CI, or keep committing them and accept the tax) — do not quietly keep paying it.
+
+## 15. The gate command itself was broken, so every "not green" was the command failing
+
+**Verified 2026-09-29:** SKILL.md's ready gate was
+`gh pr checks <n> --json name,state,conclusion | python3 bin/receipts-check.py …`.
+`gh pr checks --json` has no `conclusion` field. It printed `Unknown JSON field:
+"conclusion"` to stderr and nothing to stdout, and the checker then saw an empty
+rollup and exited 1 on EVERY PR. Real green PRs (one in each of two libraries)
+looked "not green". Four separate diagnosis agents found it independently in one sweep.
+The field is `bucket` (`pass`/`fail`/`pending`/`skipping`); the checker reads `state`,
+so the fix was the field list only. Rule: a gate whose failure mode looks exactly like
+its verdict must be run once against a known-green PR before anyone trusts it.
+
+## 16. A cancelled check is not a green one — and neither gate looked
+
+**Verified 2026-10-05:** a /wrap flipped two PRs (an app repo, a routine library) ready
+while five and one of their CI jobs, respectively, were CANCELLED: GitHub's hosted
+runners never picked them up ("The job was not acquired by Runner of type hosted even
+after multiple attempts", 19:33–20:18Z). The draft check passed (nothing was a draft) and
+`receipts-check.py` passed (named checks existed; by design it does not judge
+conclusions). The user opened their queue and found nothing actually ready to merge.
+Fix: `bin/prr.sh` judges conclusions per ready PR against the base branch's latest run
+of each check. Re-running the workflow (`gh run rerun <id>`) turned both green with
+no code change.
+
+Its first live run also found a true positive outside this session: an app repo's
+`staging` → `main` prod promotion PR is red on `audit` while `main` is green, so it
+would carry `staging`'s critical `next` advisory into prod. "Inherited" is relative
+to the PR's own base, which for a promotion is `main`, not `staging`.

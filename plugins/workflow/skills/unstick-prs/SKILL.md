@@ -55,8 +55,17 @@ queue only sees ready-for-review, so a finished draft is invisible work.
    `--force-with-lease` only, and only onto the PR's own branch.
 4. **Disposition** — exactly one of:
    - **ready** — verified finished (checks green or failure documented as
-     inherited, referenced paths resolve, repo conventions met) → tighten the body
-     to match reality, `gh pr ready`, receipt comment.
+     inherited, referenced paths resolve, repo conventions met) → run
+     `gh pr checks <n> --json name,state,bucket | python3
+     ${CLAUDE_PLUGIN_ROOT}/skills/unstick-prs/bin/receipts-check.py --body <(gh pr view <n> --json body -q .body) --pr <n>`
+     first; a zero-named-checks rollup exits 1 and is not green — do not flip on
+     exit 1, no matter how the body reads (this is the exact bug a 2026-09-22
+     sweep shipped on two PRs: self-tests only, no CI, flipped anyway). Then
+     `${CLAUDE_PLUGIN_ROOT}/skills/unstick-prs/bin/prr.sh <owner/repo>#<n>`, which judges the check
+     CONCLUSIONS that receipts-check.py does not: exit 1 (a failed or cancelled
+     check the base branch doesn't share) or 4 (still running) means do not flip.
+     A cancelled check is a re-run, never a pass (receipt #16). Both exit 0 →
+     tighten the body to match reality, `gh pr ready`, receipt comment.
    - **close-superseded** — a successor exists → **fold first, then close**: merge
      the superseded content into the successor so nothing is lost, then close with
      a comment naming the successor and the fold commit.

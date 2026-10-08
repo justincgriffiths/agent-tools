@@ -68,9 +68,10 @@ slogan; if it can only be executed by opening a specific file, it's a transcript
 
 - A file-based agent queue — e.g. a `_TEMPLATE.md` carrying the child format + granularity
   rule, an `_epics/` dir holding the parents, and a script that prints the rolled-up parent view.
-- Cards on a backlog board — same split: epic card vs. agent-runnable child cards.
+- GitHub issues in the owning repo — same split: a `parent`-labelled issue vs. child issues or
+  PRs an agent can execute. (A card board works the same way: epic card vs. agent-runnable child cards.)
 - Deep-speccing ONE approved child (PRD + tech spec) is a separate job. This skill decides
-  what the children *are* and what the parent says.
+  what the children *are* and what the parent says; don't run a spec interview here.
 
 ## Origin
 

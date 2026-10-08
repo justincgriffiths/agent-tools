@@ -22,8 +22,8 @@ saying "apply it".
 
 ## Boundaries (MECE with siblings)
 
-- Knowledge-vault **wiki** health (broken links, orphan pages, frontmatter) → a wiki linter, not this.
-- Vault shape / device sync / sensitive-data sweeps → a separate vault-hygiene pass, not this.
+- Knowledge-vault health (broken links, orphan pages, frontmatter) → a knowledge-base linter, not this.
+- Vault shape / sync / sensitive-data sweeps → a separate vault-hygiene pass, not this.
 - Skill **overlap/bloat/trigger** hygiene → `learn` Mode B, not this.
 - This skill owns everything those don't: operational docs in your main workspace repo, skill library,
   template library, `~/.claude` (commands + settings-adjacent docs), loop STATE files,
@@ -74,5 +74,5 @@ true") is a valid, desirable result — say it in one line and stop.
    (an un-CLOSED STATE header, a command inviting invocation).
 3. **Re-filing weekly.** Check for an open card before staging; a suggestion the user hasn't
    approved yet is a decision pending, not a new finding.
-4. **Scope creep into the wiki.** A knowledge vault's wiki belongs to its linter; touching it
-   here double-reports.
+4. **Scope creep into the knowledge corpus.** A knowledge vault's notes belong to its linter;
+   touching them here double-reports.

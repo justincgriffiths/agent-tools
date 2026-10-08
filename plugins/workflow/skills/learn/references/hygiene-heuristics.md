@@ -27,6 +27,10 @@ matches several. Symptoms:
 usually a description retune (lead with the discriminator, drop the shared generic phrase), or a
 consolidation (merge N verb-split skills into one with internal dispatch + `references/`).
 
+Optional: a second-model check — `scan-skills.sh | scripts/overlap-judge.py` pairs skills that
+share distinctive description words and asks a judge model (`JUDGE_CMD`) whether each pair
+competes for triggers. Log-only and advisory; it skips cleanly when no judge is configured.
+
 ## 2. Bloat
 
 `SKILL.md` over ~300 lines. Big bodies load slowly and bury the operative steps. **Card:** propose

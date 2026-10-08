@@ -148,7 +148,7 @@ intake:
 ```
 
 ````
-/portal-page new
+/app-page new
 ```intake
 surface:  client-hub
 client:   acme
@@ -161,6 +161,37 @@ context:  Third tab, next to Reports. Same guard as Reports — do not make
 
 The middle dots are gone, the groups are named slots, and the checker can tell you
 that `surface:` is missing before anything runs.
+
+**One skill, both forms** — a hypothetical `audit-landing-page`.
+
+Short form — one line, up to about three slots:
+
+```
+/audit-landing-page scan --url acme.com --mobile
+```
+
+Rich form — same skill, same grammar, more detail:
+
+````
+/audit-landing-page scan
+```intake
+url:         acme.com
+surfaces:    /, /pricing, /demo
+viewport:    desktop+mobile
+deliverable: deck
+known-issue: hero CTA below fold on iPhone SE
+```
+````
+
+Declared in frontmatter, so the contract is machine-readable and an agent knows what
+to ask for **before** starting work:
+
+```yaml
+intake:
+  verbs:    [scan, estate, rerender]
+  required: [url]
+  optional: [surfaces, viewport, deliverable, known-issue]
+```
 
 ## Migration
 

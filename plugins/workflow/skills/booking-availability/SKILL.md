@@ -243,6 +243,35 @@ The user asked why nobody can book them. Lead with whether that is fixed.
 
 ## Provenance
 
+**The second wave actually landed — verified 2026-09-03.** Symptom: "my calendar keeps getting
+blocked for meetings." Credentials were **all healthy** (6 connected, zero `error.message`), so
+the one rule cleared in a single call and the cause was downstream: a secondary work calendar
+had been reconnected *and selected* in Cal.com, and it was never purged in August. Numbers that
+named it, Sep 3 → Oct 15: the secondary calendar **198.5h** busy vs the primary **63.0h**. Beyond
+Oct 15 the ratio inverts (34.5h vs 258.5h) — the phantom window has a **horizon**, because
+the writer died 2026-08-20 and only ever wrote so far forward. A Wednesday in December was
+completely empty; a real weekly commitment would not be.
+
+Three tells that identify mirror writes without reading a single title — useful when you only
+have `freeBusyReader`:
+- **`updated` timestamps are machine-regular** — the 2026-10-14 batch was all written
+  2026-08-15 at `:01` and `:31` past the hour, ~3.5h apart. Humans do not schedule like that.
+- **Weekly-identical slots carry different event IDs and no `recurringEventId`** — so they are
+  individually written copies, not instances of one recurrence.
+- **A copy sits on the mirror target that duplicates a real event on the source calendar** —
+  the primary calendar's genuine recurring standup (10:00–10:15, with `recurringEventId`)
+  appeared on the secondary calendar as a standalone non-recurring event at the identical time.
+- Bonus: **Sunday busy time on a work calendar** when the source calendar has none.
+
+**Also confirmed: `accessRole: freeBusyReader` is the real ceiling.** Borrowing access got times
+and IDs but never titles, so the skill's own "never delete on shape alone" rule blocks the agent
+from finishing the job. Diagnosis is fully automatable; remediation is not. Budget for a human.
+
+**Watch for duplicate connections.** `GET /v2/calendars` showed both work calendars
+each connected **twice** (two credential IDs apiece), all four selected — the
+residue of the August disconnect-and-re-add. Harmless for availability (busy is busy) but it
+doubles every busy-times query and makes the output read as worse than it is.
+
 Verified 2026-08-21 against a live incident: the user's "every slot blocked across August and
 September" report traced to a revoked Google OAuth credential, found by `GET /v2/calendars` in
 one call after roughly two hours had gone into schedules, date overrides and calendar events

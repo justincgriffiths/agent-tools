@@ -1,6 +1,6 @@
 ---
 name: naming
-description: Decide what to CALL a thing and where it goes before creating it — a new skill/routine/template/prompt, a directory, a script, a frontmatter field, or a command invocation. Load BEFORE authoring, and when a name feels arbitrary, when two things want the same name, or when you are about to invent a frontmatter field. A reusable house grammar for a personal or team library of agent skills; the judgment is here, enforcement belongs in your own linter.
+description: Decide what to CALL a thing and where it goes before creating it — a new skill/routine/template/prompt, a directory, a script, a frontmatter field, a command invocation, a file/media record, a git branch or worktree, or a background session. Load BEFORE authoring or renaming a batch (including a sweep of the agents list), before `git checkout -b` / `git worktree add` / EnterWorktree, when a name feels arbitrary, when two things want the same name, or when you are about to invent a frontmatter field. A reusable house grammar for a personal or team library of agent skills; the judgment is here, enforcement belongs in your own linter.
 intake:
   verbs: [place, name, invoke, field, audit]
   required: [thing]
@@ -19,7 +19,18 @@ to fit your own layout; the judgment transfers either way.
 - One-page lookup: [`references/CHEATSHEET.md`](references/CHEATSHEET.md)
 - The invocation contract in full: [`references/invocation.md`](references/invocation.md)
 - What to do when a slot is missing: [`references/asking.md`](references/asking.md)
-- Enforcement: a linter + generator you own, in three tiers (generate · block · report) — §5
+- One concept, one word — the semantic tier: [`references/vocabulary.md`](references/vocabulary.md)
+- The body and the shape of a unit: [`references/unit-grammar.md`](references/unit-grammar.md)
+- Scoring a unit against the grammar: [`references/rubric.md`](references/rubric.md)
+- Enforcement: a linter + generator you own, in four tiers (generate · block · report · settle) — §5
+
+> **A retraction worth keeping.** An earlier version of this page said the enforcement tool
+> was missing from the main checkout of its library. **That was wrong.** It was on
+> `origin/main` — `git ls-tree origin/main` listed every file. What was actually true was
+> narrower: the main checkout was *checked out* on a feature branch that diverged before the
+> merge, so the directory was absent from the working tree while present in the repo. The fix
+> is `git checkout main`, not a path into a worktree — and paths written from the wrong
+> conclusion resolve only until that worktree is re-cut (cron gotcha 9, turned on its author).
 
 > **The rule this skill exists to obey:** enforcement beats documentation. Every
 > rule below that a machine can adjudicate **should be** adjudicated — by a linter at
@@ -73,9 +84,94 @@ Categories are plural, units are singular things: `contracts/audit-full/`,
 `audit-prompts/meta-audit.md`. Dates are ISO `yyyy-mm-dd`, everywhere, in every
 field, forever.
 
-*Checkable:* kebab-case on units and scripts, entry-doc presence, `name:` matching the
-directory. *Judgment:* whether the name says what the thing is. `portal-page` and
-`portal-home` both pass the checker; whether they are one skill is your call.
+### Units vs records — two grammars
+
+Everything above governs a **unit**: a thing you invoke or open by name. A
+**record** is a row in a set, one of thousands, named to be sorted and parsed by
+a machine. Records use `_` between **fields** and `-` **inside** a field, because
+a record is a tuple, not a phrase:
+
+```
+deck-to-pdf                                    unit
+acme_2026-08-15_email_prospects_promo_fall-sale_a  record
+2023-08-05_2056_iphone-13-mini_img-3151.mov      record (media)
+```
+
+Three record grammars are common — email-platform campaigns, ad names, media files — and
+two of their rules look like violations of this page but are not (`xna` as a
+value, a `<client>_` prefix). Media naming has four rules that were each paid
+for, the sharpest being **never name from a UTC timestamp**.
+
+Full treatment: [`references/records.md`](references/records.md). Per-platform
+UTM parameter specs belong in their own conventions doc, not here.
+
+*Checked:* kebab-case on units and scripts, entry-doc presence, `name:` matching the
+directory. *Judgment:* whether the name says what the thing is. `app-page` and
+`app-home` both pass the checker; whether they are one skill is your call.
+
+### Branches and worktrees — the third grammar
+
+A unit is invoked, a record is sorted, and a **branch or worktree is a place work
+physically happens**. That earns one element the other two do not have: the device.
+
+```
+<type>/<slug>[-<device>]          feat/deletion-lane-devbox
+<worktrees-root>/<slug>-<device>  .claude/worktrees/photo-stall-laptop2
+```
+
+`device` is a canonical name from a device registry you keep (e.g. a `devices.yaml`),
+lowercased — e.g. `devbox` · `laptop2` · `homeserver`. Never a hostname, a former name, or a
+kind (`mini`, `air`).
+
+**Tag when the device is falsifiable, not when it is merely mentioned.** Would this
+behave differently, or be unverifiable, on another machine? Tag it if it touches a
+plist or a `hosts:`-declared job, writes per-host state, needs a credential or
+volume that lives on one box — or if it is a **worktree**, which is a physical
+directory and so is always tagged. Leave it off for skills, docs and library code,
+where "it worked on my machine" is not a meaningful sentence. An omitted tag is a
+claim too: *this runs anywhere*.
+
+**The device is a tag, never the namespace.** `host/**` is rejected. A namespace is
+a category, and putting a machine there invites a permanent per-machine line of
+development — which is what left one repo's `main` 72 commits behind every branch.
+The slug is a description; a device there says only *where the work runs*.
+
+New as of 2026-09-18 and worth trying for one reason: a device tag is the **only
+naming element a machine can verify** — `scutil --get LocalHostName` agrees with it
+or it does not. Which also means a stale tag is worse than none, so a branch is
+renamed when its work moves, and merged and deleted like any other.
+
+Full treatment, the prior-art post-mortem and the checks:
+[`references/branches.md`](references/branches.md).
+
+### Background sessions — the fourth grammar
+
+A background session is a row in a list the user scans to decide **what to keep**, so it
+is the one grammar whose name carries lifecycle:
+
+```
+[STATUS_][NNN_]TAG_slug     YOU_014_BLD_copy-accuracy-audit    DEL_BAU_rsvp-and-block-time
+```
+
+- **`STATUS`**: whose move is next, `YOU` · `AGT` · `DEL`. The only slot re-set after
+  naming, on every sweep.
+- **`NNN`**: a claimed durable thread. One slug, one thread: a continuing session
+  rejoins its claimed number and never mints a second one.
+- **`TAG_slug`**: the kind of work and the job. `SCREAMING` tag and `_` separators
+  break the kebab rule on purpose, because nothing imports a session by name. The
+  client ban still holds.
+
+Enforcement belongs to whatever names your sessions (a small session-naming script), not the
+library linter, which never sees a session. Why the status exists, how to choose one, and the
+duplicate-number post-mortem:
+[`references/sessions.md`](references/sessions.md).
+
+### Documents — the fifth grammar (proposed)
+
+Drive and Notion titles have no grammar yet: a census of 46 recent titles (2026-10-02)
+found five separators, seven version marks and four date styles. What already follows from
+this page: the client in full, never an abbreviation, in a title (one concept, one word); an
+ISO date; one separator. *Judgment until ruled; nothing checks it.*
 
 ### Naming a thing well — the part with no check
 
@@ -88,6 +184,23 @@ directory. *Judgment:* whether the name says what the thing is. `portal-page` an
 4. **Do not encode a version.** Git is the version. There is no `-v2`.
 5. **Prefer the name you would search for at 11pm**, not the one that classifies
    most tidily.
+6. **One concept, one word — and write the word down.** Rules 1-5 govern a name in
+   isolation; this one governs it against every name already in the tree. A second
+   word for a concept you already named is a retrieval failure, not a style
+   quibble: the next reader searches the right idea with the wrong string and
+   concludes it does not exist. Keep the vocabulary in a `glossary.yml` your checker
+   reads, where a ruling is a check rather than a paragraph.
+   Rubric and the false-positive classes:
+   [`references/vocabulary.md`](references/vocabulary.md).
+7. **A slot that predicts goes stale; a slot that observes needs a re-reader.** A name
+   is written once, so every slot describes the moment of naming. That is fine for
+   what never changes (the job, the kind of work) and wrong for anything the reader
+   needs to know *now*. If the name must carry current state, give that state its own
+   slot and a mechanism that re-sets it. Otherwise leave state out of the name.
+   **Verified 2026-09-29:** a session's number was a prediction ("will this matter?"),
+   51 of 57 sessions predicted yes, and the list stopped separating anything. The
+   fix was an observed `STATUS_` slot re-read on every sweep. A stale device tag on a
+   branch is the same failure; see the fourth grammar above.
 
 ## 3. Frontmatter
 
@@ -107,22 +220,9 @@ the skill library that no convention had ever declared: `user-invocable:` ×3,
 looked like a convention to the next session that read it. Adding a field should be a
 deliberate edit to the schema.
 
-Writing that check forced a ruling on each, and two of the seven were **kept** —
-which is the useful part of the exercise:
-
-| Field | Ruling | Why |
-|---|---|---|
-| `user-invocable` | **kept** | Being invocable is orthogonal to taking arguments. The first draft retired it in favour of "an `intake:` block means invocable", which is plainly wrong: `doc-maintenance` is invocable and declares no intake because it takes none. |
-| `metadata` | **kept** | `metadata.<harness>.{tags,related_skills}` is live config — a sync script copies these skills into a second agent harness, which reads it. Retiring it would have deleted working config with nowhere to put it. |
-| `triggers` | retired → `description` | The description *is* the trigger. Where a trigger phrase was not already in the description, it was folded in — `deck-ship` kept "ship the deck" and "harvest the deck edits" that way. |
-| `type` | retired | The library a thing lives in is its type. |
-| `tags` | retired → `metadata.<harness>.tags` | One skill had top-level `tags:`; two used the nested form. The majority pattern won. |
-| `category` | retired | Skills are flat. `category:` is a template field. |
-| `canonized` | retired → `created` | A third name for the authoring date. |
-
-The lesson worth keeping: **a rule that survives contact with the tree is a rule; one
-that does not is a preference.** Two of my seven did not survive, and finding that out
-cost one lint run.
+Writing that check forced a ruling on each, and two of the seven were **kept**
+(`user-invocable`, `metadata`). The per-field rulings and the lesson:
+[`references/field-rulings.md`](references/field-rulings.md).
 
 *Judgment:* whether a `source:` is true, and whether a `description:` actually fires.
 Both are well-formed when fabricated.
@@ -130,40 +230,11 @@ Both are well-formed when fabricated.
 ## 4. How it is invoked
 
 Short form for quick calls, a fenced block when the detail matters. Same grammar
-either way. Full spec and worked examples:
+either way. The shape, the frontmatter declaration, full spec and worked examples:
 [`references/invocation.md`](references/invocation.md). Its runtime counterpart — how a unit
 asks for a slot it could not resolve, without a model authoring the options — is
 [`references/asking.md`](references/asking.md). Check the contract
 with your linter, and an emitter with a menu driver's `--validate <emitter>`.
-
-Short form — one line, up to about three slots:
-
-```
-/audit-landing-page scan --url acme.com --mobile
-```
-
-Rich form — same skill, same grammar, more detail:
-
-````
-/audit-landing-page scan
-```intake
-url:         acme.com
-surfaces:    /, /pricing, /demo
-viewport:    desktop+mobile
-deliverable: deck
-known-issue: hero CTA below fold on iPhone SE
-```
-````
-
-Declared in frontmatter, so the contract is machine-readable and an agent knows what
-to ask for **before** starting work:
-
-```yaml
-intake:
-  verbs:    [scan, estate, rerender]
-  required: [url]
-  optional: [surfaces, viewport, deliverable, known-issue]
-```
 
 Three rules carry the weight:
 
@@ -181,7 +252,7 @@ can declare `required: [url]`, ignore it, and pass clean.
 
 ## 5. Maintaining it when you are not watching
 
-Three tiers, by failure class. The split is the whole design: the tier that needs no
+Four tiers, by failure class. The split is the whole design: the tier that needs no
 attention handles the drift that actually happens.
 
 | Tier | What holds it | Catches |
@@ -189,36 +260,39 @@ attention handles the drift that actually happens.
 | **Generate** | a generator rebuilds from frontmatter | README indexes, `MANIFEST.yml`, the cheat sheet's own tables |
 | **Block** | pre-commit, block tier only, touched units only | names, missing/retired/unknown fields, dates, enums, intake shape |
 | **Report** | a weekly digest | staleness, over-long descriptions, unmigrated invocations, unhooked clones |
+| **Settle** | a vocabulary check against `glossary.yml` + a ruling from you | one concept named two ways — the only tier whose findings a machine cannot decide alone |
 
 A workable tool shape: `lint <library> [--tier block|report]`, `apply <library>` (dry run by
 default, `--apply` to normalize + regenerate), an `install-hook` that wires the block tier into
-pre-commit, and a `verify` that is the gate for the tooling itself.
+pre-commit, a `verify` that is the gate for the tooling itself, and for the settle tier a term
+extractor piped into a vocabulary checker that proposes and never applies.
 
-**The index drift is the argument for generating rather than documenting.** The skill
-library's `README.md` had six skills missing under a CLAUDE.md rule that said to update the
-index in the same commit as any skill change. The rule was prose, so it lost. Nothing was
-generated, so nothing noticed. A prose-only rule is a draft.
+**Why generate rather than document** (the six skills a prose rule let fall out of the
+index), and **where the enforcement is genuinely thin** — the block-tier hook, worktree
+hooks, `--no-verify`, a report tier that never applies:
+[`references/enforcement.md`](references/enforcement.md). Read it before wiring a
+pre-commit hook.
 
-**Where enforcement is genuinely thin — design for these up front:**
+## The `audit` verb
 
-- **Worktrees break basename-based library detection.** A linter that derives library
-  identity from the **basename** of the path it is given fails in a git worktree, because
-  `git rev-parse --show-toplevel` returns the worktree path (`.../worktrees/<slug>`), not the
-  library name. If the hook then treats any non-zero exit as a violation *while discarding
-  stderr*, it blocks every commit with an empty reason. **Verified 2026-08-21:** a test
-  commit from a worktree was blocked with a blank finding list. Two fixes: resolve the
-  library by walking the path for the deepest component that names a known library; and have
-  the hook distinguish exit 1 (violations — block) from exit 2 (lint could not run — warn and
-  allow). Fail-closed with no message is worse than no gate.
-- **An installer that skips linked worktrees** (`[ ! -d "$lib/.git" ]` — in a worktree `.git`
-  is a file) reads as "worktrees are unprotected", but hooks live in the **common** git dir, so
-  installing on the main checkout covers every worktree. The skip is misleading, not protective.
-- **Hooks are per-clone and untracked**, so a fresh clone silently has no block tier. Have the
-  report tier list unhooked clones.
-- **`--no-verify` exists.** The digest should still surface what was bypassed — bypassing
-  should cost a line in a report, not silence.
-- **The report tier proposes and never applies.** It cannot fix a stale skill; it can only
-  make sure you know.
+`intake.verbs` has declared `audit` since this skill was written, and for a while
+nothing said what it did — the exact defect §4 warns about, sitting in this page's
+own frontmatter.
+
+```
+/naming audit
+/naming audit --library skill-library
+```
+
+It runs the settle tier and hands you the candidates: extract every term on a
+controlled surface, cluster the same-surface pairs, check them against the
+glossary, and present what is left. Then you adjudicate, using
+[`references/vocabulary.md`](references/vocabulary.md) — that is the whole job, and
+the reason this verb cannot be a script. `--library` narrows the scan; omitted, it
+reads all four.
+
+It proposes and never applies. Accepting a ruling means writing a row into
+`glossary.yml`; nothing renames a file on your behalf.
 
 ## Gotchas
 
@@ -245,43 +319,21 @@ generated, so nothing noticed. A prose-only rule is a draft.
 7. **Renames leave orphaned symlinks.** Renaming a skill strands its
    `~/.claude/skills/` link. After any rename:
    `find -L ~/.claude/skills -maxdepth 1 -type l -print -delete`.
-8. **A double hyphen is illegal inside an XML comment**, so documenting a CLI flag in
-   a launchd `.plist` header makes the plist unparseable. Hit twice in one skill —
-   `--publish`, then `--refresh-state`. Both times **`launchctl load` accepted it and
-   the job ran**, so nothing surfaced; `plistlib.load()` is what catches it. Write
-   flags without the leading hyphens in plist prose, and parse-check before commit:
-   `python3 -c "import plistlib;plistlib.load(open('x.plist','rb'))"`.
-   A tolerant loader is not a validator — this is latent breakage on reboot.
-9. **A cron harness must not reference a worktree path.** Live checkouts move. A plist
-   whose `ProgramArguments` points into a worktree silently stops firing when that
-   worktree is re-cut. Point at an installed copy of the wrapper
-   (e.g. `~/Library/Application Support/<area>/`) or at the stable
-   `~/.claude/skills/<skill>` symlink — and have the wrapper resolve the skill dir through a
-   fallback list, so it fails loudly rather than half-running.
-10. **A cron that writes files into a repo must own the commit.** Otherwise its
-   output survives only when a human remembers, and the repo sits permanently
-   dirty — which then masks real changes. Found the day a scheduled probe went
-   live: it would have run four times a day forever, rewriting the same
-   uncommitted report. If a cron may commit a generated file it solely owns, the
-   obligation to actually commit it is the other half. Scope the commit to the exact path
-   (`git commit -- reports/`) so it can never sweep up something hand-authored, and warn
-   into the run log on a failed push rather than swallowing it.
-11. **Shipping a plist whose wrapper does not exist fails silently, daily.** A plist named
-   a wrapper script that was never written; `launchctl load` succeeds regardless, and the
-   failure only shows as an empty log. If a plist names a wrapper, commit the wrapper in the
-   same change, and have the wrapper write one heartbeat line to **stdout** — an empty
-   launchd log is indistinguishable from a job that never fired.
+8–11. **Cron-harness gotchas** — a double hyphen breaks a plist's XML comment; a cron
+   harness must not reference a worktree path; a cron that writes into a repo owns the
+   commit; ship the wrapper with the plist:
+   [`references/cron-gotchas.md`](references/cron-gotchas.md).
+12. **A new prefix shaped like an existing slot must be parsed first, everywhere.**
+   `DEL_`, then `YOU_` and `AGT_`, are three capitals and `_`, which is exactly a tag.
+   Any checker that tests the tag regex first reads `YOU_014_BLD_x` as tag `YOU`, loses
+   the number, and "repairs" the rest. **Verified 2026-09-29:** a session reaper resolved no
+   registry row for a `YOU_014_…` fixture until it stripped the status first. When you
+   add a slot, grep for every parser of the grammar, not just the one you are editing.
 
 ## Receipts
 
-**Verified 2026-08-17:** a linter, index generator, normalizer, and the generate-tier apply
-(dry run and apply) were run against four libraries; the finding counts in this skill are
-measured, not estimated.
-
-**Verified 2026-08-21:** hook install then removal on a skill library; a worktree commit
-blocked with an empty finding list and allowed again after removal; the linter exiting 2 on
-a worktree basename; `plistlib.load()` rejecting a plist that `launchctl load` had accepted
-and run; a launchd job firing on `launchctl start` and writing its heartbeat to both logs.
+**Verified** 2026-08-17 and 2026-08-21 — what was run, and against what:
+[`references/receipts.md`](references/receipts.md).
 
 **Unverified:** that a weekly report job behaves the same on a schedule as by hand. Load it
 and fire it with `launchctl start` before trusting it: `launchd` gives a job no

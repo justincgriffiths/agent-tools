@@ -246,6 +246,24 @@ curl -X DELETE -g \
 ```
 
 `POST` the same shape re-selects it. Reversible in one call per calendar.
+**`POST` does NOT take the same shape — corrected 2026-09-11.** DELETE takes query
+parameters; POST takes a **JSON body** and ignores the query string, returning
+`400 "integration must be a string"` if you send the DELETE shape:
+
+```bash
+# cal-api-version: 2024-06-14 — returns 201
+curl -X POST "https://api.cal.com/v2/selected-calendars" \
+  -H "Content-Type: application/json" \
+  -d '{"integration":"google_calendar","externalId":"<email>","credentialId":<int>}'
+```
+
+Reversible in one call per calendar. A small wrapper of your own (e.g. `calsel.sh on|off|dest|show`)
+that covers both shapes and reads state back after every write is worth having.
+
+**Setting the booking destination works too** (the 404 list above is about enumerating and
+deleting credentials, not this): `PUT /v2/destination-calendars`, `cal-api-version: 2024-06-11`,
+JSON body `{"integration":"google_calendar","externalId":"<email>"}` — returns 200. Verified
+2026-09-11 moving the destination from one work calendar to another.
 
 **This is a mutation, not a probe.** It has no dry-run and no confirmation step. A call made to
 "see if the endpoint exists" silently changes live availability — do not send it exploratively.
