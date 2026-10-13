@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""idea-doc-check — is a shape-an-idea doc finished?
+"""idea-doc-check — does a shape-an-idea doc clear the bar?
 
 Filter: reads the doc from the path argument (or stdin when the path is '-'), prints one
 line per gap, and exits 1 on any gap, 0 when the doc is complete, 2 on a usage error.
@@ -7,13 +7,15 @@ line per gap, and exits 1 on any gap, 0 when the doc is complete, 2 on a usage e
   python3 bin/idea-doc-check.py docs/ideas/<slug>.md
 
 Complete means:
-  - all six sections are present, by heading
-  - no section still says _pending_ (text inside HTML comments is ignored)
-  - the decision log has at least one decision made by a person: its "Decided by" cell
-    (found by header, not position) is not an agent and not marked "(fact)"
-  - Workflow v0 contains a step table and an "N=1" run note
-  - Next moves holds at least three list items
-Headings match case-insensitively.
+  - all seven sections are present (headings match case-insensitively), none still _pending_
+    (text inside HTML comments is ignored)
+  - the decision log has at least one decision the person made in this session: its
+    "Decided by" cell (found by header) is not an agent, not "(fact)", not "carried"
+  - autopilot docs (header line "mode: autopilot") record "Overturned: N of M"
+  - Deliverables and timeline holds two tables (deliverables, timeline)
+  - Work packages holds a table with Tier, Est. min and Acceptance columns; every row has a
+    known tier, a numeric estimate and a non-empty acceptance check
+  - Dry-fire ends in "Result: pass" or "Result: re-tiered to <tier> ..."
 """
 import re
 import sys
@@ -22,10 +24,13 @@ SECTIONS = [
     "Problem statement",
     "Decision log",
     "Assumptions",
-    "Research plan and findings",
-    "Workflow v0",
-    "Next moves",
+    "Research",
+    "Deliverables and timeline",
+    "Work packages",
+    "Dry-fire",
 ]
+TIERS = {"script", "small", "mid", "frontier", "human"}
+SEP = re.compile(r"^\|(\s*:?-{2,}:?\s*\|)+\s*$")
 
 
 def strip_comments(text: str) -> str:
@@ -44,15 +49,12 @@ def split_sections(text: str) -> dict:
     return {k: "\n".join(v).strip() for k, v in out.items()}
 
 
-SEP = re.compile(r"^\|(\s*:?-{2,}:?\s*\|)+\s*$")
-
-
 def cells(line: str) -> list:
     return [c.strip() for c in line.strip().strip("|").split("|")]
 
 
 def tables(body: str) -> list:
-    """Every markdown table in body as (header_cells, data_rows)."""
+    """Every markdown table in body as (header_cells_lowercased, data_rows)."""
     lines = body.splitlines()
     out = []
     for i in range(1, len(lines)):
@@ -65,9 +67,17 @@ def tables(body: str) -> list:
     return out
 
 
-def is_agent(who: str) -> bool:
+def col(header: list, *names: str):
+    for i, h in enumerate(header):
+        if any(h.startswith(n) for n in names):
+            return i
+    return None
+
+
+def not_in_session(who: str) -> bool:
     w = who.lower()
-    return "(fact)" in w or bool(re.match(r"(the\s+)?(agent|claude|ai)\b", w))
+    return ("(fact)" in w or "(assumed" in w or w.startswith("carried")
+            or bool(re.match(r"(the\s+)?(agent|claude|ai)\b", w)))
 
 
 def check(text: str) -> list:
@@ -81,27 +91,49 @@ def check(text: str) -> list:
             gaps.append(f"section still pending: ## {name}")
 
     if "decision log" in sections:
+        log = sections["decision log"]
         human = []
-        for header, rows in tables(sections["decision log"]):
-            if "decided by" not in header:
+        for header, rows in tables(log):
+            k = col(header, "decided by")
+            if k is None:
                 continue
-            k = header.index("decided by")
             human += [r for r in rows if len(r) > k and r[k]
-                      and "_pending_" not in " ".join(r) and not is_agent(r[k])]
+                      and "_pending_" not in " ".join(r) and not not_in_session(r[k])]
         if not human:
-            gaps.append("decision log has no decision made by a person")
+            gaps.append("decision log has no decision the person made in this session")
+        if re.search(r"mode:\s*autopilot", text, re.I) and not re.search(r"Overturned:\s*\d+\s+of\s+\d+", log):
+            gaps.append("autopilot doc has no 'Overturned: N of M' line in the decision log")
 
-    if "workflow v0" in sections:
-        wf = sections["workflow v0"]
-        if not tables(wf):
-            gaps.append("Workflow v0 has no step table")
-        if not re.search(r"N\s*=\s*1", wf):
-            gaps.append("Workflow v0 has no N=1 run note")
+    if "deliverables and timeline" in sections:
+        if len(tables(sections["deliverables and timeline"])) < 2:
+            gaps.append("Deliverables and timeline needs two tables (deliverables, timeline)")
 
-    if "next moves" in sections:
-        items = re.findall(r"^\s*(?:[-*]|\d+\.)\s+\S", sections["next moves"], re.M)
-        if len(items) < 3:
-            gaps.append(f"Next moves has {len(items)} list items; needs 3")
+    if "work packages" in sections:
+        pkg = [(h, r) for h, r in tables(sections["work packages"]) if col(h, "tier") is not None]
+        if not pkg:
+            gaps.append("Work packages has no package table with a Tier column")
+        for header, rows in pkg:
+            t, e, a = col(header, "tier"), col(header, "est"), col(header, "acceptance")
+            if e is None or a is None:
+                gaps.append("package table needs Est. min and Acceptance columns")
+                continue
+            if not rows:
+                gaps.append("package table has no packages")
+            for r in rows:
+                pid = r[0] if r else "?"
+                if len(r) <= max(t, e, a):
+                    gaps.append(f"package {pid}: row has missing cells")
+                    continue
+                if r[t].lower() not in TIERS:
+                    gaps.append(f"package {pid}: tier '{r[t]}' is not one of {sorted(TIERS)}")
+                if not re.fullmatch(r"\d+", r[e]):
+                    gaps.append(f"package {pid}: Est. min '{r[e]}' is not a number")
+                if not r[a] or r[a] in {"-", "–"}:
+                    gaps.append(f"package {pid}: no acceptance check")
+
+    if "dry-fire" in sections:
+        if not re.search(r"^Result:\s*(pass\b|re-tiered to\s+\w+)", sections["dry-fire"], re.M | re.I):
+            gaps.append("Dry-fire has no 'Result: pass' or 'Result: re-tiered to <tier>' line")
     return gaps
 
 
