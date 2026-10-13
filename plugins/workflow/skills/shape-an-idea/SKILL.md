@@ -46,8 +46,9 @@ is the progress bar, the handoff and the thing they share, all at once.
   Outside a repo, use the current directory and say so.
 - **Shape:** copy [`references/idea-doc.md`](references/idea-doc.md). Every section starts as
   `_pending_` and is replaced as its act closes.
-- **Check:** `python3 bin/idea-doc-check.py docs/ideas/<slug>.md` exits 0 only when every
-  section is filled and the decision log holds at least one decision the person made. Run it
+- **Check:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/shape-an-idea/bin/idea-doc-check.py docs/ideas/<slug>.md`
+  exits 0 only when every section is filled, the decision log holds at least one decision the
+  person made, Workflow v0 records its N=1 run, and there are three next moves. Run it
   before you say the session is finished.
 
 Write each decision into the doc the moment it is made, not at the end. If the session dies at
@@ -145,7 +146,7 @@ the spec.
 
 The session is finished when all four of these are true:
 
-- **Doc complete:** `idea-doc-check.py` exits 0.
+- **Doc complete:** `idea-doc-check.py` (path above) exits 0.
 - **Person confirmed:** they confirmed the problem statement in Act 1 and picked from the next
   moves in Act 3.
 - **Scratch contained:** spikes live in a scratch directory, not mixed into the real codebase.

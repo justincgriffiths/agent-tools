@@ -27,7 +27,7 @@ Score each line pass/fail. A change ships when it does not lose a pass on any se
 | R4 | Problem statement confirmed before research | An explicit "is this the idea?" before any research sub-agent |
 | R5 | Research runs in parallel | Independent sub-agents launched in one message |
 | R6 | Findings carry no because-clauses | Findings section holds observations and sources only |
-| R7 | Workflow ran once on a real input | Workflow v0 has an "N=1 run" note |
+| R7 | Workflow ran once on a real input | The N=1 note names a real input, not a hypothetical (the checker only sees that the note exists) |
 | R8 | No recommendation or verdict written for the person | No "we recommend" or "verdict" prose in the doc |
 | R9 | Checker passes at close | `bin/idea-doc-check.py` exits 0 |
 | R10 | S5 handled correctly | Skill skipped or went straight to a short Act 3 |

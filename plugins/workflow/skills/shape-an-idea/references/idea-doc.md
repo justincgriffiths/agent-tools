@@ -28,9 +28,10 @@ one row decided by the person. -->
 
 | # | Assumption | Kill-power | Status |
 |---|---|---|---|
-| A1 | _pending_ | high / med / low | unknown / known / waived |
+| A1 | _pending_ | _pending_ | _pending_ |
 
-<!-- What has to be true for the decisions to hold. "waived" = the person chose to proceed
+<!-- What has to be true for the decisions to hold. Kill-power: high / med / low.
+Status: unknown / known / waived. "waived" = the person chose to proceed
 without knowing; the risk stays named here. -->
 
 ## Research plan and findings
@@ -50,7 +51,7 @@ _pending_
 _pending_
 
 <!-- Table: step | input | output | who/what (person, agent, script, tool).
-Then "N=1 run": the one real input used, and what broke or felt wrong at each step. -->
+Then a line starting "N=1 run:" naming the one real input used, and what broke or felt wrong at each step. -->
 
 ## Next moves
 

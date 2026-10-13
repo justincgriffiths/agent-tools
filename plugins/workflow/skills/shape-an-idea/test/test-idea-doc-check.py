@@ -36,8 +36,12 @@ Ops leads miss client asks buried in long threads; a daily digest surfaces them.
 |---|---|---|---|
 | 1 | inbox | threads | script |
 
+N=1 run: yesterday's inbox; step 1 missed forwarded threads.
+
 ## Next moves
 1. Run on 10 days of mail
+2. Script the label step
+3. Ask two ops leads to read one digest
 """
 
 
@@ -68,8 +72,47 @@ class IdeaDocCheck(unittest.TestCase):
         self.assertIn("Workflow v0 has no step table", chk.check(doc))
 
     def test_next_moves_need_items(self):
-        doc = COMPLETE.replace("1. Run on 10 days of mail", "Later.")
-        self.assertIn("Next moves has no list items", chk.check(doc))
+        doc = COMPLETE.replace("2. Script the label step\n", "")
+        self.assertIn("Next moves has 2 list items; needs 3", chk.check(doc))
+
+    def test_workflow_needs_n1_note(self):
+        doc = COMPLETE.replace("N=1 run: yesterday's inbox; step 1 missed forwarded threads.", "")
+        self.assertIn("Workflow v0 has no N=1 run note", chk.check(doc))
+
+    def test_decided_by_found_by_header_not_position(self):
+        log = ("| Decision | Chosen | Decided by | Round |\n|---|---|---|---|\n"
+               "| Audience | Ops | agent (fact) | 1 |\n")
+        doc = self._swap_log(log)
+        self.assertIn("decision log has no decision made by a person", chk.check(doc))
+
+    def test_second_table_header_not_counted(self):
+        log = ("| # | Decision | Chosen | Decided by | Round |\n|---|---|---|---|---|\n"
+               "| D1 | X | y | agent (fact) | 1 |\n\n### Waived\n"
+               "| # | Decision | Chosen | Decided by | Round |\n|---|---|---|---|---|\n"
+               "| D2 | Z | w | Claude (fact) | 2 |\n")
+        self.assertIn("decision log has no decision made by a person", chk.check(self._swap_log(log)))
+
+    def test_agent_name_variants(self):
+        for who in ["Claude (fact)", "the agent", "AI (fact)", "Claude"]:
+            doc = COMPLETE.replace("| Sam |", f"| {who} |")
+            self.assertIn("decision log has no decision made by a person", chk.check(doc), who)
+
+    def test_person_named_like_agent_prefix_counts(self):
+        doc = COMPLETE.replace("| Sam |", "| Aisha |")
+        self.assertEqual(chk.check(doc), [])
+
+    def test_template_assumption_row_pending(self):
+        self.assertIn("section still pending: ## Assumptions", chk.check(TEMPLATE))
+
+    def test_heading_case_insensitive(self):
+        doc = COMPLETE.replace("## Decision log", "## Decision Log")
+        self.assertEqual(chk.check(doc), [])
+
+    @staticmethod
+    def _swap_log(log):
+        start = COMPLETE.index("## Decision log")
+        end = COMPLETE.index("## Assumptions")
+        return COMPLETE[:start] + "## Decision log\n" + log + "\n" + COMPLETE[end:]
 
 
 if __name__ == "__main__":

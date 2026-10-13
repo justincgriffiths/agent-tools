@@ -9,9 +9,11 @@ line per gap, and exits 1 on any gap, 0 when the doc is complete, 2 on a usage e
 Complete means:
   - all six sections are present, by heading
   - no section still says _pending_ (text inside HTML comments is ignored)
-  - the decision log has at least one decision made by a person, not "agent (fact)"
-  - Workflow v0 contains a table
-  - Next moves holds at least one list item
+  - the decision log has at least one decision made by a person: its "Decided by" cell
+    (found by header, not position) is not an agent and not marked "(fact)"
+  - Workflow v0 contains a step table and an "N=1" run note
+  - Next moves holds at least three list items
+Headings match case-insensitively.
 """
 import re
 import sys
@@ -35,45 +37,71 @@ def split_sections(text: str) -> dict:
     for line in text.splitlines():
         m = re.match(r"^##\s+(.+?)\s*$", line)
         if m:
-            current = m.group(1)
+            current = m.group(1).lower()
             out[current] = []
         elif current is not None:
             out[current].append(line)
     return {k: "\n".join(v).strip() for k, v in out.items()}
 
 
-def table_rows(body: str) -> list:
-    rows = [l for l in body.splitlines() if l.strip().startswith("|")]
-    # drop header + separator
-    data = [r for r in rows[1:] if not re.match(r"^\|\s*:?-{2,}", r.strip())]
-    return [[c.strip() for c in r.strip().strip("|").split("|")] for r in data]
+SEP = re.compile(r"^\|(\s*:?-{2,}:?\s*\|)+\s*$")
+
+
+def cells(line: str) -> list:
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def tables(body: str) -> list:
+    """Every markdown table in body as (header_cells, data_rows)."""
+    lines = body.splitlines()
+    out = []
+    for i in range(1, len(lines)):
+        if SEP.match(lines[i].strip()) and lines[i - 1].strip().startswith("|"):
+            rows, j = [], i + 1
+            while j < len(lines) and lines[j].strip().startswith("|"):
+                rows.append(cells(lines[j]))
+                j += 1
+            out.append(([c.lower() for c in cells(lines[i - 1])], rows))
+    return out
+
+
+def is_agent(who: str) -> bool:
+    w = who.lower()
+    return "(fact)" in w or bool(re.match(r"(the\s+)?(agent|claude|ai)\b", w))
 
 
 def check(text: str) -> list:
     gaps = []
     sections = split_sections(strip_comments(text))
     for name in SECTIONS:
-        if name not in sections:
+        key = name.lower()
+        if key not in sections:
             gaps.append(f"missing section: ## {name}")
-        elif not sections[name] or "_pending_" in sections[name]:
+        elif not sections[key] or "_pending_" in sections[key]:
             gaps.append(f"section still pending: ## {name}")
 
-    log = sections.get("Decision log", "")
-    human = [
-        r for r in table_rows(log)
-        if len(r) >= 4 and r[3] and "_pending_" not in r[1]
-        and not r[3].lower().startswith("agent")
-    ]
-    if "Decision log" in sections and not human:
-        gaps.append("decision log has no decision made by a person")
+    if "decision log" in sections:
+        human = []
+        for header, rows in tables(sections["decision log"]):
+            if "decided by" not in header:
+                continue
+            k = header.index("decided by")
+            human += [r for r in rows if len(r) > k and r[k]
+                      and "_pending_" not in " ".join(r) and not is_agent(r[k])]
+        if not human:
+            gaps.append("decision log has no decision made by a person")
 
-    wf = sections.get("Workflow v0", "")
-    if "Workflow v0" in sections and not table_rows(wf):
-        gaps.append("Workflow v0 has no step table")
+    if "workflow v0" in sections:
+        wf = sections["workflow v0"]
+        if not tables(wf):
+            gaps.append("Workflow v0 has no step table")
+        if not re.search(r"N\s*=\s*1", wf):
+            gaps.append("Workflow v0 has no N=1 run note")
 
-    nm = sections.get("Next moves", "")
-    if "Next moves" in sections and not re.search(r"^\s*(?:[-*]|\d+\.)\s+\S", nm, re.M):
-        gaps.append("Next moves has no list items")
+    if "next moves" in sections:
+        items = re.findall(r"^\s*(?:[-*]|\d+\.)\s+\S", sections["next moves"], re.M)
+        if len(items) < 3:
+            gaps.append(f"Next moves has {len(items)} list items; needs 3")
     return gaps
 
 
