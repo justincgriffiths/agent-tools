@@ -1,0 +1,41 @@
+name: Session report
+description: Tried a skill on a real problem? Tell us how it went. The good, the bad and the weird all help.
+title: "[session] <skill>: <one-line idea or task>"
+labels: ["session-report"]
+body:
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Skill
+      options: [shape-an-idea, learn, wrap, dedupe, doc-maintenance, write-work-items, naming, unstick-prs, find-meeting-time, booking-availability]
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes:
+      label: What you brought to it
+      description: The idea or task, in a sentence or two. Leave out anything confidential.
+    validations: { required: true }
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: Where did it get you?
+      options:
+        - Finished. I have a doc and a next step I'll actually take
+        - Partway. Useful, but I stopped early
+        - Not useful. It got in the way
+    validations: { required: true }
+  - type: textarea
+    id: best
+    attributes:
+      label: Best moment
+      description: A question, finding or step that changed your thinking.
+  - type: textarea
+    id: worst
+    attributes:
+      label: Worst moment
+      description: Where it was slow, wrong, repetitive or asked something it should have known.
+  - type: input
+    id: length
+    attributes:
+      label: Roughly how long was the session?
+      placeholder: e.g. 40 min

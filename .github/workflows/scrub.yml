@@ -6,3 +6,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bin/scrub-check plugins bin/deny-generic.txt
+      - run: python3 plugins/workflow/skills/shape-an-idea/test/test-idea-doc-check.py
