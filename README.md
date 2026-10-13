@@ -24,7 +24,7 @@ Or run `/plugin marketplace update jg-tools`. The plugin carries no `version`, s
 
 | Skill | Use it to |
 |---|---|
-| `shape-an-idea` | Turn a rough idea into a problem statement, a research plan that gets run, and a workflow tried once |
+| `shape-an-idea` | Turn a worthwhile but unspecified idea into deliverables, a timeline and work packages cheaper agents can run |
 | `learn` | Turn a correction or hard-won lesson into a durable rule in the right place |
 | `wrap` | Close a session cleanly: capture, commit, hand off |
 | `dedupe` | Find and resolve duplicate files/docs without losing the canonical copy |
@@ -38,12 +38,17 @@ Or run `/plugin marketplace update jg-tools`. The plugin carries no `version`, s
 ## Try it: shape an idea
 
 ```
-/workflow:shape-an-idea I want to automate our weekly client report
+/workflow:shape-an-idea owner/repo#123
+/workflow:shape-an-idea owner/repo#123 autopilot
 ```
 
-One session, three acts: an interview that ends in a problem statement you sign off on,
-research run in parallel by sub-agents, and a rough workflow run once on a real input. It
-all lands in `docs/ideas/<slug>.md`. Plan on 30–60 minutes.
+Bring an idea that's clearly worth doing but that nobody has broken down yet. The session
+interviews you in quick picker rounds, runs research in parallel with sub-agents, and splits
+the work into deliverables, a timeline and work packages, each sized for a model tier. It then
+**proves** the spec by handing one package to a cheaper agent with nothing but the package
+text. In autopilot the agent answers its own questions from evidence, stops only at decisions
+that are yours (audience, money, anything client-facing or irreversible), and records how
+often you overturn it. Plan on 30–60 minutes.
 
 Used it on something real? [File a session report](https://github.com/justincgriffiths/agent-tools/issues/new?template=session-report.yml).
 The worst moment you hit is the most useful part.

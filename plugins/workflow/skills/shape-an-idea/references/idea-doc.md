@@ -1,28 +1,32 @@
 <!--
 Idea doc template for shape-an-idea. Copy to docs/ideas/<slug>.md before the first question.
-Every section starts as _pending_ and gets replaced when its act closes.
-bin/idea-doc-check.py checks this shape. Keep the six ## headings exactly as written.
+Every section starts as _pending_ and is replaced when its act closes.
+bin/idea-doc-check.py checks this shape. Keep the seven ## headings exactly as written.
 -->
 # <Idea name>
 
-_Started <YYYY-MM-DD> · status: shaping | researching | workflow | done_
+_Started <YYYY-MM-DD> · mode: interactive | autopilot · source: <issue ref or "conversation">_
+
+Readiness ░░░░░░ 0/6
 
 ## Problem statement
 
 _pending_
 
-<!-- One or two sentences the person signed off on in Act 1. Who has the problem, what it
-costs them today, and what changes if it is solved. -->
+<!-- One or two sentences the person signed off on. Who has the problem, what it costs today,
+what changes when it's solved. -->
 
 ## Decision log
 
 | # | Decision | Chosen | Decided by | Round |
 |---|---|---|---|---|
-| D1 | _pending_ | | | |
+| D1 | _pending_ | _pending_ | _pending_ | _pending_ |
 
-<!-- One row per decision, written the moment it is made. "Decided by" is the person's name or
-"agent (fact)" for things that were looked up rather than chosen. The checker needs at least
-one row decided by the person. -->
+<!-- One row per decision, written the moment it is made.
+Decided by: the person's name · "carried (<source>)" for a decision settled before the session
+· "agent (fact)" for something looked up · "agent (assumed, conf: high/med/low)" for an
+autopilot answer. The checker needs at least one row decided by the person.
+Autopilot: add a line "Overturned: N of M" after the person's review. -->
 
 ## Assumptions
 
@@ -30,32 +34,39 @@ one row decided by the person. -->
 |---|---|---|---|
 | A1 | _pending_ | _pending_ | _pending_ |
 
-<!-- What has to be true for the decisions to hold. Kill-power: high / med / low.
-Status: unknown / known / waived. "waived" = the person chose to proceed
-without knowing; the risk stays named here. -->
+<!-- Kill-power: high / med / low. Status: unknown / known / waived.
+"waived" = the person chose to proceed without knowing; the risk stays named here. -->
 
-## Research plan and findings
+## Research
 
 _pending_
 
 <!-- One block per research question:
 ### R1 — <question> (tests A1)
 - Method: repo read | web search | tool query | spike
-- Done when: <condition>
-- Timebox: <minutes>
+- Done when: <condition> · Timebox: <minutes>
 - Finding: <observation> — source: <link/path> — confidence: high/med/low
 -->
 
-## Workflow v0
+## Deliverables and timeline
 
 _pending_
 
-<!-- Table: step | input | output | who/what (person, agent, script, tool).
-Then a line starting "N=1 run:" naming the one real input used, and what broke or felt wrong at each step. -->
+<!-- Deliverables table: ID | deliverable | done-means (checkable without reading code).
+Then the timeline table: week of | packages | owner | gate. Then one line naming the
+critical path and the capacity assumption the person gave. -->
 
-## Next moves
+## Work packages
 
 _pending_
 
-<!-- Three concrete moves the person picked from your proposals. Each one should be startable
-without another conversation. -->
+<!-- Package table, then one ### block per package. See references/work-packages.md.
+| ID | Deliverable | Goal | Tier | Est. min | Depends-on | Acceptance |
+Tier is one of: script, small, mid, frontier, human. -->
+
+## Dry-fire
+
+_pending_
+
+<!-- Package fired · tier · questions the agent asked · what changed in the spec · re-fires.
+End with a line "Result: pass" or "Result: re-tiered to <tier> because <reason>". -->

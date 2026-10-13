@@ -1,26 +1,31 @@
 ---
 name: shape-an-idea
-description: Turn a half-formed idea into three things in one sitting — a sharp problem statement, a research plan that actually gets run, and a rudimentary workflow you can try at N=1 tomorrow. Part interview, part coding session. Use for "help me flesh out this idea", "I have an idea for X", "is this worth building", "what would it take to automate Y", "shape this", "/shape-an-idea", or any vague ask where the person cannot yet say who it is for, what done looks like, or what the first step is. Owns the order of operations — decisions before research, research before workflow — and the line between facts (the agent finds them) and decisions (the person makes them). SKIP for a plan that is already specified (just build it), for pure stress-testing of a finished plan (a grilling skill), and for a research question with no idea attached (a research skill).
-argument-hint: "the idea, in a sentence or a paragraph — rough is fine; anything missing gets asked"
+description: Turn an idea that is clearly worth doing, but not yet specified, into a spec cheaper agents can execute. One session, part interview and part coding, ending with deliverables, a timeline and work packages sized for a model tier, one of them proven by handing it to that tier. Use for "spec this out", "break this into work for the agents", "shape this idea", "turn this issue into delegable work", "/shape-an-idea", or any issue that says what and why but leaves how, in what pieces and by whom open. Owns the line between facts (the agent finds them) and decisions (the person makes them), the bar a spec must clear (a cheaper agent can run it without asking a question), and the autopilot mode in which an agent shapes an idea alone and stops only at gates. SKIP for raw notions with no evidence they matter (talk first), for work already split into packages a mid-tier agent can run (just dispatch them), and for stress-testing a finished plan (a grilling skill).
+argument-hint: "the idea or an issue reference (repo#n); add 'autopilot' to let the agent answer its own questions and stop only at gates"
 intake:
   required: [idea]
-  optional: [audience, deadline, constraints, prior-art, where-to-save]
+  optional: [issue, mode, audience, deadline, constraints, where-to-save]
 created: 2026-10-12
-source: extracted from the author's working sessions, 2026 — repeated sessions where an idea went straight to code, and the first real question ("who is this for?") surfaced three hours in.
-summary: "Interview an idea into a problem statement, launch a research plan with sub-agents, and leave a rudimentary workflow proven at N=1"
+source: extracted from the author's working sessions, 2026. Ideas that were useful enough to file but stayed parked because nobody broke them into pieces a cheaper agent could pick up, and specs that read clearly to the author but sent a smaller model in the wrong direction.
+summary: "Shape a worthwhile but unspecified idea into deliverables, a timeline and tiered work packages, and prove one package on a cheaper agent"
 group: "Capture & meta"
 ---
 
 # shape-an-idea
 
-An idea arrives as a sentence. What it needs before anyone builds it is three answers: **what
-exactly is the problem**, **what do we not know yet**, and **what is the smallest thing we
-could run tomorrow**. This skill gets all three in one session, in that order, and writes them
-into one document the person can share.
+The ideas that stall are the ones in the middle of the backlog. Each is useful enough to file,
+with a clear what and why, but nobody has turned it into pieces someone else can pick up. A
+frontier model can usually work out the how on the fly, but it is too expensive to spend on
+every chunk of work. A cheaper model needs the how written down. This skill writes it down,
+in a session that is fast and engaging enough that the person wants to stay in it.
 
-**The failure this prevents:** going straight from the sentence to code. That happens because
-building feels like progress and questions feel like delay. Three hours later the first real
-question surfaces ("wait, who is this for?") and the code answers a different one.
+**The bar:** a spec is done when **a cheaper agent can execute each work package without
+asking a question**. Clear to the author doesn't count, and neither does complete-looking.
+The skill proves the bar by handing a package to that agent (Act 4).
+
+**The failure this prevents:** a parent issue with "child to open" in four places that stays
+parked for weeks. Or the opposite: the work gets dispatched anyway, and a small model
+confidently builds the wrong thing from a spec only its author could read.
 
 ---
 
@@ -28,117 +33,178 @@ question surfaces ("wait, who is this for?") and the code answers a different on
 
 > **Facts are the agent's job. Decisions are the person's.**
 
-Never ask the person for something you could look up: what already exists in the repo, what a
-tool supports, what a competitor charges. Dispatch a sub-agent and keep the conversation
-moving. Never decide for them: who it is for, what "good" means, what to cut. Put each one to
-them as a question, with your recommendation attached, and wait for the answer.
+Never ask for something you could look up, such as what the repo holds, what a tool returns,
+or what the data says. Dispatch a sub-agent and keep the conversation moving. Never decide the
+business logic yourself: who it is for, thresholds, money, scope cuts, what "good" means. Put
+each one to the person as a question, with your recommendation attached.
 
-Everything below is how that rule plays out across the three acts.
+Autopilot (below) moves this line, but it doesn't erase it.
+
+---
+
+## Modes
+
+| Mode | Who answers the questions | Stops for the person at |
+|---|---|---|
+| **Interactive** (default) | The person, from your recommendations | Every round |
+| **Autopilot** | The agent, from evidence and recorded precedent | Gates only, then one final review |
+
+**Gates are always the person's, in every mode:** who it is for, money (budgets, prices,
+spend), anything client-facing or outward-facing, anything irreversible, and any decision you
+would make with low confidence.
+
+In autopilot, log every self-answered decision as `agent (assumed)` with its evidence and
+confidence. At the end, put the whole log to the person in one review round: accept all, or
+pick the ones to revisit. **Count the overturns** and record the rate in the doc. A low
+overturn rate across several sessions is the evidence for widening autopilot; one session
+proves nothing.
 
 ---
 
 ## The artifact: one idea doc
 
-Create it **before the first question**. A doc that starts empty and fills in front of the person
-is the progress bar, the handoff and the thing they share, all at once.
+Create it **before the first question**, so the person can watch it fill in.
 
-- **Where:** `docs/ideas/<slug>.md` in the current repo, unless the person named a place.
-  Outside a repo, use the current directory and say so.
-- **Shape:** copy [`references/idea-doc.md`](references/idea-doc.md). Every section starts as
-  `_pending_` and is replaced as its act closes.
+- **Where:** `docs/ideas/<slug>.md` in the current repo, unless the person names a place. When
+  shaping an issue, link the doc from the issue.
+- **Shape:** copy [`references/idea-doc.md`](references/idea-doc.md). Each section starts as
+  `_pending_`.
 - **Check:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/shape-an-idea/bin/idea-doc-check.py docs/ideas/<slug>.md`
-  exits 0 only when every section is filled, the decision log holds at least one decision the
-  person made, Workflow v0 records its N=1 run, and there are three next moves. Run it
-  before you say the session is finished.
+  exits 0 only when the doc clears the bar. Run it before calling the session finished.
 
-Write each decision into the doc the moment it is made, not at the end. If the session dies at
-minute 20, the doc should still be worth reading.
+Write each decision into the doc the moment it's made. If the session dies halfway, the doc
+should still be worth handing on.
+
+---
+
+## Act 0 — Intake: what's already settled
+
+When the idea arrives as an issue, read it to the end, with its comments, linked issues, and
+anything it says was "ruled" or "decided". Write each settled point into the decision log as
+`carried`, with its source. **Don't re-ask what the issue already settled.** Re-asking a
+decision the person already made is the fastest way to lose them.
+
+Look for **siblings**: open issues that share a deliverable with this one, such as two reports
+that both need the same token-to-dollars step. Name them in round one. A shared deliverable is
+built once and serves both issues.
 
 ---
 
 ## Act 1 — Shape (interview)
 
-Goal: a problem statement the person would sign, and a short list of decisions that bound the
-work.
+Goal: a problem statement the person would sign, and the decisions that bound the work.
 
-Map the idea as a **decision tree**. Each decision opens the decisions that hang off it. Work
-the tree in **rounds**:
+Map the open questions as a **decision tree**, and work it in **rounds**:
 
-1. **Ask the frontier, all at once.** The frontier is every decision whose prerequisites are
-   already settled. Use the native question picker. It takes up to four questions per call, so
-   batch them rather than asking one per turn.
-2. **Recommend on every question.** Put your recommended answer first and mark it. A question
-   without a recommendation pushes the thinking back onto the person.
-3. **Never ask downstream of an open question.** If Q3 depends on how Q1 lands, Q3 waits for
-   the next round.
-4. **Recompute after every answer.** Settled decisions push the frontier outward.
+1. **Ask the frontier, all at once.** The frontier is every open decision whose prerequisites
+   are settled. Use the native question picker, up to four questions per call.
+2. **Recommend on every question.** Put your recommended answer first and mark it. Each
+   option says what it does to the work, e.g. "adds a backfill package" or "drops the weekly
+   cadence".
+3. **Never ask downstream of an open question.** It waits for the next round.
+4. **Recompute after every answer.**
 
-Round one is almost always these four questions:
+Ask **one devil's-advocate question** per session, usually in round two: "What is the
+strongest case for not doing this at all?" Ideas that survive it get better specs, and ideas
+that don't survive it were never going to be cheap.
 
-| Question | Why it comes first |
-|---|---|
-| Who is this for, specifically? | Every later answer depends on it |
-| What does it replace or remove? | It names the status quo, which is the real competitor |
-| What would "this worked" look like in a month? | It sets the bar the research has to clear |
-| What is off the table? | Time, money, tools or people the idea cannot touch |
-
-**Stop interviewing when** the problem statement and the bounding decisions fit on half a page
-and the person agrees they read right. Show them the problem statement and ask:
-**"Is this the idea?"** Don't go on to Act 2 until the answer is yes. Usually that takes two or
-three rounds. If you are past five, the idea is really two ideas. Say so, and ask which one to
-shape.
+**Stop when** you can show a problem statement and the person answers yes to "is this the
+idea?" Two or three rounds is typical. Past five rounds, the idea is really two ideas: say so,
+and ask which one to shape.
 
 ---
 
 ## Act 2 — Research (plan, then launch)
 
-Goal: every claim the idea depends on, labelled either **known** (with a source) or
-**unknown**, plus a plan that turns the unknowns that matter into known ones.
+Goal: every assumption the spec depends on, labelled **known** (with a source) or
+**unknown**.
 
-1. **List the assumptions.** Take each decision from Act 1 and write down what has to be true
-   for it to hold. Most ideas rest on three to six of them.
-2. **Rank by kill-power.** Which assumption, if false, ends the idea? Research that one first.
-   An assumption that would only change the details goes to the bottom.
-3. **Write one research question per assumption.** Each one gets a **method** (read the repo,
-   search the web, query a connected tool, run a small spike), a **done-when** condition, and
-   a **timebox**. See [`references/research-plan.md`](references/research-plan.md).
-4. **Show the plan, then launch it.** Put the research plan in the doc, ask the person to cut or
-   add questions in one picker round, then dispatch one sub-agent per question **in parallel**.
-   Keep talking while they run. The workflow sketch in Act 3 can start on whatever does not
-   depend on an open finding.
-5. **Report findings as observations.** For each question: what was found, the source, and how
-   confident you are. Leave out the because-clauses. What a finding *means* for the idea is
-   the person's call, so ask them: keep going, change direction, or stop.
+1. **List the assumptions** under each decision. Rank them by **kill-power**: if this one is
+   false, does the idea die, or does only a detail change?
+2. **Write one research question per high-kill assumption.** Give each a method (repo read,
+   web search, tool query, spike), a done-when condition and a timebox. See
+   [`references/research-plan.md`](references/research-plan.md).
+3. **Launch them in parallel**, in one message, after the person cuts or adds questions in one
+   picker round. Keep interviewing on the branches the research doesn't touch.
+4. **Report findings as observations with sources.** What a finding means for the idea is the
+   person's call: keep going, change direction, or stop.
 
-A spike counts as research. If the riskiest assumption is "the API can do X", fifteen minutes of
-code against the API beats an hour of reading about it. Keep spikes in a scratch directory and
-throw them away. They answer a question; they are not the product.
-
-**Stop researching when** the kill-power assumptions are known, or when the person decides to
-proceed without them. Record that decision in the log with its risk named.
+A spike counts as research. When the risky assumption is "the API returns X", fifteen minutes
+of code against the API settles it. Keep spikes in a scratch directory.
 
 ---
 
-## Act 3 — Workflow (rudimentary, proven at N=1)
+## Act 3 — Break down: deliverables, packages, timeline
 
-Goal: the smallest repeatable version of the idea, written as steps, run once on one real
-input.
+Goal: work that can be handed out. See
+[`references/work-packages.md`](references/work-packages.md) for the field rules and the tier
+table.
 
-1. **Write the steps as a table.** Columns: step, input, output, who or what does it (person,
-   agent, script, existing tool). Five to nine rows. If you need more, the workflow is too big
-   for a first version.
-2. **Mark each step's rung.** Can it be a script, does it need an agent, or does it need the
-   person? Pick the cheapest rung that will work. Most first versions are mostly manual, and
-   that is fine.
-3. **Run it once.** Pick one real input and walk it through every step. Do the agent and script
-   steps yourself; ask the person for theirs. Note every step that broke or felt wrong.
-4. **Write "next three moves".** Each one is concrete enough to start without another
-   conversation, e.g. "run it on 10 inputs", "script step 4", "ask two users". These are
-   proposals. The person picks.
+1. **Deliverables** are what the person tracks: three to six outcomes, written in concrete
+   nouns, each with a done-means the person could check without reading code.
+2. **Work packages** are what agents execute. Write one or more per deliverable, and keep each
+   to **one fire, one reviewable outcome**. Every package carries: goal, inputs (exact paths,
+   tables, endpoints), output, acceptance (a check that passes or fails), a do-not-touch list,
+   depends-on, **tier**, and estimated human-minutes.
+3. **Tier each package at the cheapest rung that will succeed.** If a package needs a frontier
+   model only because the spec is vague, the spec is the defect: tighten the spec, then
+   re-tier. Anything that needs a gate decision is tiered `human`.
+4. **Timeline:** order the packages by dependency, mark the critical path, and convert the
+   minutes into dates using the person's real capacity. Ask for that capacity; never assume
+   full-time.
 
-**Do not build the full version.** The output of Act 3 is a workflow that ran once, not a
-product. If the person wants to keep building, that is a new session. Hand it the idea doc as
-the spec.
+Show the package table and timeline in one message, then take cuts and changes in one picker
+round.
+
+---
+
+## Act 4 — Dry-fire: prove the spec
+
+Pick the package **most likely to be misread**. Usually that is the cheapest-tier package
+doing the most consequential work. Hand it to a sub-agent **on its assigned tier**, with only
+the package text and none of this conversation:
+
+```
+Before doing anything, list every question you would need answered to do this well.
+Then do it, in <scratch dir> only, and report against the acceptance check.
+```
+
+- **The agent asked questions, or missed acceptance:** the spec has a defect. Fix the package,
+  and fix any sibling package with the same gap. Re-fire, at most twice.
+- **It passed with no questions:** record it. The tier is proven for this kind of package.
+- **It still fails after two fixes:** move the package up one tier and write down why. That
+  becomes a calibration point for the next session.
+
+Record the outcome in the doc: package, tier, questions asked, pass/fail and what changed.
+This is the receipt that the spec meets the bar.
+
+---
+
+## Act 5 — Publish (with the person's go-ahead)
+
+Creating issues is outward-facing, so confirm before writing them. Then write one parent issue
+for the person to track, plus one child issue per package, using the house work-item grammar
+(`write-work-items`, if installed) and tier labels the dispatcher understands. Link the idea
+doc from the parent. If the source was an existing issue, that issue becomes the parent: edit
+it, don't duplicate it.
+
+---
+
+## Making it engaging
+
+What keeps a person in the session is fast, visible progress where every answer changes
+something:
+
+- **Readiness meter.** End every round with one line, e.g.
+  `Readiness ▓▓▓░░░ 3/6 · 9 decided · 2 unknown · next: research`. The six steps are problem,
+  decisions, research, packages, timeline and dry-fire.
+- **Short turns.** One round or one finding per message. Picker answers take a click, not a
+  paragraph.
+- **Show the consequence.** When an answer adds or drops a package, say so in the next line:
+  "That drops the backfill package, 2 h saved."
+- **Let them jump.** If they want to go straight to packages, let them. Unanswered questions
+  stay visible as unknowns, and the meter shows the gap.
+- **Name detours.** Anything over about 15 minutes gets offered as a trade, not quietly taken.
 
 ---
 
@@ -146,44 +212,37 @@ the spec.
 
 The session is finished when all four of these are true:
 
-- **Doc complete:** `idea-doc-check.py` (path above) exits 0.
-- **Person confirmed:** they confirmed the problem statement in Act 1 and picked from the next
-  moves in Act 3.
-- **Scratch contained:** spikes live in a scratch directory, not mixed into the real codebase.
-- **Pointer given:** the final message links the doc and lists the next moves the person chose.
+- **Bar met:** `idea-doc-check.py` exits 0, and the dry-fire passed or the package was
+  re-tiered with a reason.
+- **Person confirmed:** they confirmed the problem statement and approved the packages. In
+  autopilot, they also reviewed the decision log.
+- **Published or parked:** the issues are written, or the person chose not to publish and the
+  doc says so.
+- **Pointer given:** the final message links the doc and the parent issue, and gives the
+  autopilot overturn rate if that mode ran.
 
-Don't write a recommendation or verdict section for them. The doc records what was decided and
-what was found. Any "should we do this?" paragraph is theirs to write.
-
----
-
-## Pacing — it's a conversation, not a pipeline
-
-- **Short turns.** One round of questions or one finding per message. Walls of text kill the
-  back-and-forth that makes this work.
-- **Interleave.** While sub-agents research, keep interviewing on independent branches or sketch
-  workflow steps that do not depend on the findings.
-- **Name detours.** If something will take more than about 15 minutes, such as a big spike or a
-  long read, describe it as a trade and let the person decide whether to take it.
-- **Let the person jump.** If they want to skip to the workflow, let them. Write down what was
-  skipped as an open assumption so it stays visible.
+Don't write a recommendation or verdict on whether to do the work. The doc holds the
+decisions and findings; the "should we" paragraph belongs to the person.
 
 ---
 
 ## Gotchas
 
-- **The first sentence is rarely the idea.** "A dashboard for X" usually means "I keep missing
-  Y". Ask what triggered the idea. The trigger is often the real problem.
-- **Agreeable answers are not decisions.** "Sure, sounds good" on your recommendation is weak
-  evidence. On the decisions that bound the work, ask for the reason in their own words.
-- **Research sprawl.** Every unknown looks researchable. Only kill-power assumptions get a
-  sub-agent in the first pass. The rest go in the doc as open questions.
-- **Silent tools lie.** A connector that returns nothing may be disconnected, not empty.
-  Before reporting "nothing exists", make one call that must return something.
-- **Spikes that become the product.** If spike code starts getting tests and a README, stop
-  and ask whether the session has turned into a build.
+- **Settled-looking isn't specified.** An issue with a plan and four "child to open" lines is
+  right in this skill's band. Carry the decisions it settled, then shape the rest.
+- **Agreeable answers are not decisions.** "Sure" on your recommendation is weak evidence. On
+  the decisions that bound the work, ask for the reason in the person's own words.
+- **Research sprawl.** Only high-kill assumptions get a sub-agent. Everything else stays in
+  the doc as an open question.
+- **Silent tools lie.** A connector that returns nothing may be disconnected. Make one call
+  that must return something before you report "nothing exists".
+- **A frontier tier hiding a vague spec.** If you reach for the top tier, ask what a smaller
+  model would get wrong, and write that answer into the package.
+- **Dry-firing the easy package.** It proves nothing. Fire the package you're least sure of.
+- **Autopilot creep.** Gates never become `agent (assumed)`, however obvious the answer looks.
 
 ---
 
 Interview technique (design tree, frontier rounds, recommendation on every question) adapted
-from [mattpocock/skills](https://github.com/mattpocock/skills) `grilling` (MIT).
+from [mattpocock/skills](https://github.com/mattpocock/skills) `grilling` (MIT). Complexity in
+estimated human-minutes follows METR's time-horizon work.
