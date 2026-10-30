@@ -24,16 +24,19 @@ Or run `/plugin marketplace update jg-tools`. The plugin carries no `version`, s
 
 | Skill | Use it to |
 |---|---|
-| `shape-an-idea` | Turn a worthwhile but unspecified idea into deliverables, a timeline and work packages cheaper agents can run |
-| `learn` | Turn a correction or hard-won lesson into a durable rule in the right place |
-| `wrap` | Close a session cleanly: capture, commit, hand off |
-| `dedupe` | Find and resolve duplicate files/docs without losing the canonical copy |
-| `doc-maintenance` | Keep docs and indexes honest as the code under them moves |
-| `write-work-items` | Write tasks a human reviewer can actually act on |
-| `naming` | Adopt one naming + frontmatter grammar across skill/script/template libraries |
-| `unstick-prs` | Find PRs where finished work is dying and get them mergeable |
-| `find-meeting-time` | Find a slot across calendars without the usual timezone/ownership traps |
-| `booking-availability` | Audit and fix booking-page availability (Cal.com-style) |
+| [`shape-an-idea`](plugins/workflow/skills/shape-an-idea/README.md) | Turn a worthwhile but unspecified idea into deliverables, a timeline and work packages cheaper agents can run |
+| [`learn`](plugins/workflow/skills/learn/README.md) | Turn a correction or hard-won lesson into a durable rule in the right place |
+| [`wrap`](plugins/workflow/skills/wrap/README.md) | Close a session cleanly: capture, commit, hand off |
+| [`dedupe`](plugins/workflow/skills/dedupe/README.md) | Find and resolve duplicate files/docs without losing the canonical copy |
+| [`doc-maintenance`](plugins/workflow/skills/doc-maintenance/README.md) | Keep docs and indexes honest as the code under them moves |
+| [`write-work-items`](plugins/workflow/skills/write-work-items/README.md) | Write tasks a human reviewer can actually act on |
+| [`naming`](plugins/workflow/skills/naming/README.md) | Adopt one naming + frontmatter grammar across skill/script/template libraries |
+| [`unstick-prs`](plugins/workflow/skills/unstick-prs/README.md) | Find PRs where finished work is dying and get them mergeable |
+| [`find-meeting-time`](plugins/workflow/skills/find-meeting-time/README.md) | Find a slot across calendars without the usual timezone/ownership traps |
+| [`booking-availability`](plugins/workflow/skills/booking-availability/README.md) | Audit and fix booking-page availability (Cal.com-style) |
+
+Each skill name links to its README: when to use it, how to invoke it, an example, and what it
+needs.
 
 ## Try it: shape an idea
 
